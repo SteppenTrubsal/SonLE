@@ -1,5 +1,5 @@
 #include "partOne.cpp"
 
-int main(int, char**){
-    test();
+int main(){
+    subMain1();
 }

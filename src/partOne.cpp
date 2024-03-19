@@ -1,23 +1,23 @@
 #include <iostream>
 #include <muParser.h>
+#include <string>
+#include <vector>
+#include "someFunc.cpp"
+using namespace std;
 
-void test(){
-    std::string expression;
-    double x;
+void subMain1(){
+    cout << "Enter an equation: ";
+    string func;
+    getline(cin, func);
+    eqRebuild(func);
 
-    mu::Parser parser;
-    parser.DefineVar("x", &x);
+    vector<rootRange> res = findRootSpaces(func);
+    cout << res.size() << " root(s) was found:" << endl;
 
-    std::cout << "Введите математическое выражение: ";
-    std::getline(std::cin, expression);
-
-    parser.SetExpr(expression);
-
-    std::cout << "Введите значение переменной x: ";
-    std::cin >> x;
-
-    double result = parser.Eval();
-
-    std::cout << "Значение функции: " << result << std::endl;
-
+    for(int i = 0; i < res.size(); i++){
+        NewtonMethod(func, res[i], 1e-4);
+    }
+    for(int i = 0; i < res.size(); i++){
+        cout << i+1 << " root on [" << res[i].a << ", " << res[i].b << "]" << " is " << res[i].root << ", calculation taked " << res[i].counter << " iterations" << endl;
+    }
 }
