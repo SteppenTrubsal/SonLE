@@ -1,5 +1,5 @@
 #include <iostream>
-#include "someFunc.cpp"
+#include "someFunc.hpp"
 using namespace std;
 
 struct rootRange {

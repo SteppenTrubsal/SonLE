@@ -1,5 +1,5 @@
-#include "partOne.cpp"
-#include "partTwo.cpp"
+#include "partOne.hpp"
+#include "partTwo.hpp"
 
 int main(){
     //subMain1();
