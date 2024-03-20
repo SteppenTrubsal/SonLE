@@ -1,5 +1,5 @@
 #include <iostream>
-#include "someFunc.cpp"
+#include "someFunc.hpp"
 using namespace std;
 
 struct mulRoots {
@@ -61,7 +61,7 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
     for (int i = 0; i < pole.size(); i++) {
         for (int j = 0; j < pole[0].size(); j++) {
             max_diff = (max_diff < pole[i][j].diff && !isnan(pole[i][j].diff)) ? pole[i][j].diff : max_diff;
-            max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_diff;
+            max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_var;
         }
     }
     for (int i = 0; i < pole.size(); i++) {
@@ -71,8 +71,8 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
         }
     }
 
-    for (int i = 0; i < pole.size(); i++) {
-        for (int j = 0; j < pole[0].size(); j++) {
+    for (int i = 1; i < pole.size()-1; i++) {
+        for (int j = 1; j < pole[0].size()-1; j++) {
             if (
                 (
                     pole[i][j].diff < pole[i-1][j].diff &&
@@ -86,7 +86,7 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
                     pole[i][j].var < pole[i][j + 1].var
                 )
                ) {
-                cout << i << " " << j << endl;
+                cout << i+a << " " << j+a << endl;
             }
         }
     }
