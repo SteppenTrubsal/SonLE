@@ -1,6 +1,10 @@
 #include <iostream>
+#include <thread>
+#include <mutex>
 #include "someFunc.hpp"
 using namespace std;
+
+mutex mtx;
 
 struct mulRoots {
     double a = 0, b = 0;
@@ -12,8 +16,7 @@ struct diff_var {
     double var = 0;
 };
 vector<vector<diff_var>> findPole(string&, string&, double, double, double);
-//vector<mulRoots> 
-void findRootSpaces(string& func1, string& func2, double a = -100, double b = 100, double eps = 1);
+vector<mulRoots> findRootSpaces(string& func1, string& func2, double a = -100, double b = 100, double eps = 1);
 //void NewtonMethod(string&, string&, rootRange&, double);
 
 void subMain2(){
@@ -26,7 +29,15 @@ void subMain2(){
     eqRebuild(func1);
     eqRebuild(func2);
 
-    findRootSpaces(func1, func2);
+    vector<thread> t;
+
+    for (int i = -100; i <= 75; i += 25) {
+        t.emplace_back(thread(findRootSpaces(func1, func2, i, i + 25, 1)));
+    }
+
+    for (auto& tr : t) {
+        tr.join();
+    }
 
     //vector<vector<double>> solPole = findPole(func1, func2);
     /*for(int i = 0; i < 20; i++){
@@ -52,9 +63,9 @@ vector<vector<diff_var>> findPole(string& func1, string& func2, double a, double
     }
     return pole;
 }
-//vector<mulRoots> 
-void findRootSpaces(string& func1, string& func2, double a, double b, double eps) {
+vector<mulRoots> findRootSpaces(string& func1, string& func2, double a, double b, double eps) {
     vector<vector<diff_var>> pole = findPole(func1, func2, a, b, eps);
+    vector<mulRoots> roots;
 
     double max_diff = 0;
     double max_var = 0;
@@ -86,10 +97,13 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
                     pole[i][j].var < pole[i][j + 1].var
                 )
                ) {
-                cout << i+a << " " << j+a << endl;
+                mulRoots temp;
+                temp.a = i;
+                temp.b = i + eps;
+                roots.push_back(temp);
             }
         }
     }
-
     pole.clear();
+    return roots;
 }
