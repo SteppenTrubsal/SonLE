@@ -132,6 +132,7 @@ void NewtonMethodDouble(string func1, string func2, vector<mulRoots>& roots, dou
             double a21 = findDerivativeByX(func2, x0, y0);
             double a22 = findDerivativeByY(func2, x0, y0);
 
+<<<<<<< HEAD
             double b1 = -mulFunc(func1, x0, y0) + a11 * x0 + a12 * y0;
             double b2 = -mulFunc(func2, x0, y0) + a21 * x0 + a22 * y0;
 
@@ -144,5 +145,16 @@ void NewtonMethodDouble(string func1, string func2, vector<mulRoots>& roots, dou
         } while (diff > eps);
         roots[i].rootX = x0;
         roots[i].rootY = y0;
+=======
+    vector<thread> t;
+    size_t numThreads = std::thread::hardware_concurrency();
+    vector<vector<mulRoots>> results(numThreads);
+    const double a = -100, b = 100;
+    const double range = (b - a) / numThreads;
+    for (int i = -100,j = 0; i <= (100- range); i += range,j++) {
+        double subA = a + i * range;
+        double subB = subA + range;
+        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[j]), subA, subB, 1.0);
+>>>>>>> ad51ae2f5de4b45e693c171199ff570291018867
     }
 }
