@@ -1,8 +1,5 @@
 #include <iostream>
-#include <muParser.h>
-#include <string>
-#include <vector>
-#include "someFunc.cpp"
+#include "someFunc1.cpp"
 using namespace std;
 
 void subMain1(){
