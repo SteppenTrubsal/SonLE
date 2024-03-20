@@ -2,18 +2,7 @@
 #include <muParser.h>
 using namespace std;
 
-string& eqRebuild2(string& s) {
-    int equalSign = s.find('=');
-    string left = s.substr(0, equalSign);
-    string right = s.substr(equalSign + 1);
-    s.clear();
-    s = left + "-" + right;
-    return s;
-}
-
-double absol2(double x){
-    return x < 0? -x : x;
-}
+//#################     Obsolete file   ##################
 
 struct rootRange2{
     double ax = 0;
@@ -25,14 +14,6 @@ struct rootRange2{
     int counter = 0;
     double diff = 0;
 };
-
-double func2(string& fun, double x, double y){
-    mu::Parser parser;
-    parser.SetExpr(fun);
-    parser.DefineVar("x", &x);
-    parser.DefineVar("y",&y);
-    return parser.Eval();
-}
 
 vector<rootRange2> findRootRange2(string& fun1Str, string& fun2Str, double a = -100, double b = 100, double eps = 1){
     vector<rootRange2> useless;

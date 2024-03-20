@@ -1,6 +1,12 @@
 #include <iostream>
-#include "someFunc2.cpp"
+#include "someFunc.cpp"
 using namespace std;
+
+struct mulRoots {
+
+};
+vector<mulRoots> findRootSpaces(string&, string&, double, double, double);
+void NewtonMethod(string&, string&, rootRange&, double);
 
 void subMain2(){
     string func1;
