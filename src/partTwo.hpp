@@ -13,7 +13,7 @@ struct diff_var {
 };
 vector<vector<diff_var>> findPole(string&, string&, double, double, double);
 //vector<mulRoots> 
-void findRootSpaces(string& func1, string& func2, double a = -100, double b = 100, double eps = 1);
+void findRootSpaces(string& func1, string& func2, double a = -10, double b = 10, double eps = 1);
 //void NewtonMethod(string&, string&, rootRange&, double);
 
 void subMain2(){
@@ -61,7 +61,7 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
     for (int i = 0; i < pole.size(); i++) {
         for (int j = 0; j < pole[0].size(); j++) {
             max_diff = (max_diff < pole[i][j].diff && !isnan(pole[i][j].diff)) ? pole[i][j].diff : max_diff;
-            max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_diff;
+            max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_var;
         }
     }
     for (int i = 0; i < pole.size(); i++) {
@@ -87,7 +87,7 @@ void findRootSpaces(string& func1, string& func2, double a, double b, double eps
                 )
                ) {
                 cout << i << " " << j << endl;
-            }
+            } 
         }
     }
 
