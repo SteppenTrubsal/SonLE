@@ -4,10 +4,10 @@
 #include "someFunc.hpp"
 using namespace std;
 
-mutex mtx;
+//mutex mtx;
 
 struct mulRoots {
-    double a = 0, b = 0;
+    double ax = 0, ay = 0;
     double rootX = 0, rootY = 0;
     int counter = 0;
 };
@@ -16,8 +16,8 @@ struct diff_var {
     double var = 0;
 };
 vector<vector<diff_var>> findPole(string&, string&, double, double, double);
-vector<mulRoots> findRootSpaces(string& func1, string& func2, double a = -100, double b = 100, double eps = 1);
-//void NewtonMethod(string&, string&, rootRange&, double);
+vector<mulRoots> findRootSpaces(string& func1, string& func2, double a = -10, double b = 10, double eps = 1);
+void NewtonMethod(string&, string&, mulRoots&, double eps = 1e-4);
 
 void subMain2(){
     string func1;
@@ -29,7 +29,7 @@ void subMain2(){
     eqRebuild(func1);
     eqRebuild(func2);
 
-    vector<thread> t;
+    /*vector<thread> t;
 
     for (int i = -100; i <= 75; i += 25) {
         t.emplace_back(thread(findRootSpaces(func1, func2, i, i + 25, 1)));
@@ -37,15 +37,13 @@ void subMain2(){
 
     for (auto& tr : t) {
         tr.join();
-    }
-
-    //vector<vector<double>> solPole = findPole(func1, func2);
-    /*for(int i = 0; i < 20; i++){
-        for(int j = 0; j < 20; j++){
-            cout << solPole[i][j] << " ";
-        }
-        cout << endl;
     }*/
+
+    vector<mulRoots> roots = findRootSpaces(func1, func2);
+    for (int i = 0; i < roots.size(); i++) {
+        NewtonMethod(func1, func2, roots[i], 1e-4);
+        cout << roots[i].rootX << " " << roots[i].rootY << endl;
+    }
 }
 
 vector<vector<diff_var>> findPole(string& func1, string& func2, double a, double b, double eps) {
@@ -98,12 +96,39 @@ vector<mulRoots> findRootSpaces(string& func1, string& func2, double a, double b
                 )
                ) {
                 mulRoots temp;
-                temp.a = i;
-                temp.b = i + eps;
+                temp.ax = i+a;
+                temp.ay = j+a;
                 roots.push_back(temp);
             }
         }
     }
     pole.clear();
     return roots;
+}
+
+void NewtonMethod(string& func1, string& func2, mulRoots& root, double eps) {
+    double diff;
+    double x0 = root.ax;
+    double y0 = root.ay;
+    do {
+        double x1;
+        double y1;
+        
+        double a11 = findDerivativeByX(func1, x0, y0);
+        double a12 = findDerivativeByY(func1, x0, y0);
+        double a21 = findDerivativeByX(func2, x0, y0);
+        double a22 = findDerivativeByY(func2, x0, y0);
+
+        double b1 = -mulFunc(func1, x0, y0) + a11 * x0 + a12 * y0;
+        double b2 = -mulFunc(func2, x0, y0) + a21 * x0 + a22 * y0;
+
+        x1 = (b1 * a22 - b2 * a12) / (a11 * a22 - a21 * a12);
+        y1 = (b2 * a11 - b1 * a21) / (a11 * a22 - a21 * a12);
+        diff = sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+        x0 = x1;
+        y0 = y1;
+        root.counter++;
+    } while (diff > eps);
+    root.rootX = x0;
+    root.rootY = y0;
 }
