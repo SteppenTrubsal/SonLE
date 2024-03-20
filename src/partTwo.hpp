@@ -80,10 +80,10 @@ void subMain2(){
     vector<vector<mulRoots>> results(numThreads);
     const double a = -100, b = 100;
     const double range = (b - a) / numThreads;
-    for (int i = -100; i <= 75; i += 25) {
+    for (int i = -100,j = 0; i <= (100- range); i += range,j++) {
         double subA = a + i * range;
         double subB = subA + range;
-        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1.0);
+        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[j]), subA, subB, 1.0);
     }
 
     for (auto& tr : t) {
