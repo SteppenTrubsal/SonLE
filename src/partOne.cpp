@@ -8,8 +8,8 @@ struct rootRange {
     double root = 0;
     int counter = 0;
 };
-vector<rootRange> findRootSpaces(string&, double, double, double);
-void NewtonMethod(string&, rootRange&, double);
+vector<rootRange> findRootSpaces(string& funcStr, double a = -100, double b = 100, double eps = 0.5);
+void NewtonMethod(string& funcStr, rootRange& root, double eps = 1e-6);
 
 void subMain1(){
     cout << "Enter an equation: ";
@@ -28,7 +28,7 @@ void subMain1(){
     }
 }
 
-vector<rootRange> findRootSpaces(string& funcStr, double a = -100, double b = 100, double eps = 0.5) {
+vector<rootRange> findRootSpaces(string& funcStr, double a, double b, double eps) {
     vector<rootRange> spaces;
     for (a; a < b; a += eps) {
         if (func(funcStr, a) * func(funcStr, a + eps) <= 0) {
@@ -41,7 +41,7 @@ vector<rootRange> findRootSpaces(string& funcStr, double a = -100, double b = 10
     return spaces;
 }
 
-void NewtonMethod(string& funcStr, rootRange& root, double eps = 1e-6) {
+void NewtonMethod(string& funcStr, rootRange& root, double eps) {
     double diff;
     double x0 = (root.a + root.b) / 2;
     do {

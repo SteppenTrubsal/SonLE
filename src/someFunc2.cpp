@@ -3,7 +3,7 @@
 using namespace std;
 
 //#################     Obsolete file   ##################
-
+/*
 struct rootRange2{
     double ax = 0;
     double bx = 0;
@@ -75,4 +75,4 @@ vector<vector<double>> findPole(string& fun1Str, string& fun2Str, double a = -9,
         }
     }
     return pole;
-}
+}*/

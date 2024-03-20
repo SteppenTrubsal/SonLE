@@ -1,14 +1,14 @@
+#pragma once
 #include <string>
 #include <muParser.h>
 using namespace std;
 
-string& eqRebuild(string& s) {
+void eqRebuild(string& s) {
     int equalSign = s.find('=');
     string left = s.substr(0, equalSign);
     string right = s.substr(equalSign + 1);
     s.clear();
     s = left + "-" + right;
-    return s;
 }
 
 double func(string& fun, double x){
