@@ -1,10 +1,11 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <functional>
 #include "someFunc.hpp"
 using namespace std;
 
-//mutex mtx;
+mutex mtx;
 
 struct mulRoots {
     double ax = 0, ay = 0;
@@ -29,24 +30,34 @@ void subMain2(){
     eqRebuild(func1);
     eqRebuild(func2);
 
-    /*vector<thread> t;
-
+    vector<thread> t;
+    size_t numThreads = std::thread::hardware_concurrency();
+    vector<vector<mulRoots>> results(numThreads);
+    const double a = -100, b = 100;
+    const double range = (b - a) / numThreads;
     for (int i = -100; i <= 75; i += 25) {
-        t.emplace_back(thread(findRootSpaces(func1, func2, i, i + 25, 1)));
+        double subA = a + i * range;
+        double subB = subA + range;
+        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1.0);
     }
 
     for (auto& tr : t) {
         tr.join();
-    }*/
-
-    vector<mulRoots> roots = findRootSpaces(func1, func2);
+    }
+    for (auto& result : results) {
+        for (const auto& root : result) {
+            cout << root.rootX << ' ' << root.rootY << endl;
+        }
+    }
+    //vector<vector<double>> solPole = findPole(func1, func2);
+    /*vector<mulRoots> roots = findRootSpaces(func1, func2);
     for (int i = 0; i < roots.size(); i++) {
         NewtonMethod(func1, func2, roots[i], 1e-4);
         cout << roots[i].rootX << " " << roots[i].rootY << endl;
-    }
+    }*/
 }
 
-vector<vector<diff_var>> findPole(string& func1, string& func2, double a, double b, double eps) {
+vector<vector<diff_var>> findPole(string func1, string func2, double a, double b, double eps) {
     vector<vector<diff_var>> pole;
     for (double i = a; i < b; i += eps) {
         vector<diff_var> slice;
