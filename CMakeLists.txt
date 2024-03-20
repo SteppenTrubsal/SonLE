@@ -7,4 +7,8 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.hpp")
 add_executable(SonLE ${SOURCES})
 
 find_package(muparser CONFIG REQUIRED)
+
 target_link_libraries(SonLE PRIVATE muparser::muparser)
+if (CMAKE_VERSION VERSION_GREATER 3.12)
+  set_property(TARGET SonLE PROPERTY CXX_STANDARD 20)
+endif()
