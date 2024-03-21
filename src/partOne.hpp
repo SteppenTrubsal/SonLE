@@ -31,7 +31,7 @@ void subMain1(){
 vector<rootRange> findRootSpaces(string& funcStr, double a, double b, double eps) {
     vector<rootRange> spaces;
     for (a; a < b; a += eps) {
-        if (func(funcStr, a) * func(funcStr, a + eps) <= 0) {
+        if (func(funcStr, a+1e-6) * func(funcStr, a + eps) <= 0) {
             rootRange temp;
             temp.a = a;
             temp.b = a + eps;

@@ -17,7 +17,6 @@ struct mulRoots {
     double a = 0, b = 0;
     double rootX = 0, rootY = 0;
     int counter = 0;
-    bool criterium = true;
 };
 struct diff_var {
     double diff = 0;
@@ -25,6 +24,53 @@ struct diff_var {
 };
 vector<vector<diff_var>> findPole(string, string, double, double, double);
 void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a = -100, double b = 100, double eps = 1);
+void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps);
+
+void subMain2(){
+    string func1;
+    string func2;
+
+    cout << "Enter a system of equations (separated by new line):" << endl;
+    getline(cin, func1);
+    getline(cin, func2);
+    eqRebuild(func1);
+    eqRebuild(func2);
+
+    vector<thread> t;
+    size_t numThreads = std::thread::hardware_concurrency();
+    vector<vector<mulRoots>> results(numThreads);
+    const double a = -50, b = 50;
+    double primEps = 1;
+    double secEps = 1e-4;
+    const double range = (b - a) / numThreads;
+    for (int i = 0, j = 0; i < numThreads; i++) {
+        double subA = a + i * range;
+        double subB = subA + range;
+        t.emplace_back(find2DimRootSpaces, func1, func2, std::ref(results[i]), subA, subB, primEps);
+    }
+
+    for (auto& tr : t) {
+        tr.join();
+    }
+
+    vector<mulRoots> roots;
+    find2DimRootSpaces(func1, func2, std::ref(roots), a, b, primEps);
+    newtonsMethodDouble(func1, func2, std::ref(roots), a, b, secEps);
+    
+    cout << roots.size() << " root(s) was found:" << endl;
+    for (int i = 0; i < roots.size(); i++) {
+        if (roots[i].counter != 0) {
+            cout << i + 1 << " root on " << "X = [" << roots[i].a << ", " << roots[i].a + primEps << "], Y = [" << roots[i].b << ", " << roots[i].b + primEps <<
+                "] is x = " << roots[i].rootX << ", y = " << roots[i].rootY << ". It took " << roots[i].counter << " iterations." << endl;
+        }
+        else {
+            cout << "For " << i + 1 << " root on " << "X = [" << roots[i].a << ", " << roots[i].a + primEps << "], Y = [" << roots[i].b << ", " << roots[i].b + primEps <<
+                "] Newton solution condition is not fulfilled." << endl;
+        }
+    }
+
+}
+
 void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps) {
     vector<vector<diff_var>> pole = findPole(func1, func2, a, b, eps);
     vector<mulRoots> roots;
@@ -62,66 +108,16 @@ void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, d
                         )
                 ) {
                 mulRoots temp;
-                temp.a = i + a;
-                temp.b = j + a;
+                temp.a = i*eps + a;
+                temp.b = j*eps + a;
                 roots.push_back(temp);
-                
+
             }
         }
     }
     lock_guard<mutex> lock(mtx);
     results.insert(results.end(), roots.begin(), roots.end());
 }
-
-void subMain2(){
-    string func1;
-    string func2;
-
-    cout << "Enter a system of equations (separated by new line):" << endl;
-    getline(cin, func1);
-    getline(cin, func2);
-    eqRebuild(func1);
-    eqRebuild(func2);
-
-    vector<thread> t;
-    size_t numThreads = std::thread::hardware_concurrency();
-    vector<vector<mulRoots>> results(numThreads);
-    const double a = -100, b = 100;
-    const double range = (b - a) / numThreads;
-    for (int i = 0,j = 0; i < numThreads; i ++) {
-        double subA = a + i * range;
-        double subB = subA + range;
-        t.emplace_back(find2DimRootSpaces, func1, func2, std::ref(results[i]), subA, subB, 1);
-    }
-
-    for (auto& tr : t) {
-        tr.join();
-    }
-    for (auto& result : results) {
-        for (const auto& root : result) {
-            cout << root.a << ' ' << root.b << endl;
-        }
-    }
-     
-     
-    //vector<vector<double>> solPole = findPole(func1, func2);
-    /*for(int i = 0; i < 20; i++){
-        for(int j = 0; j < 20; j++){
-            cout << solPole[i][j] << " ";
-        }
-        cout << endl;
-    }*/
-    //cout << "-*-*-*-*-*-*\n";
-
-    vector<mulRoots> roots;
-    find2DimRootSpaces(func1, func2, std::ref(roots), -10, 10, 1.0);
-    newtonsMethodDouble(func1, func2, std::ref(roots), -100, 100, 1.0);
-    for (const auto& root : roots) {
-        cout << root.a << ' ' << root.b << endl;
-    }
-
-}
-
 vector<vector<diff_var>> findPole(string func1, string func2, double a, double b, double eps) {
     vector<vector<diff_var>> pole;
     for (double i = a; i < b; i += eps) {
@@ -155,7 +151,7 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
             double b1 = -mulFunc(func1, x0, y0) + a11 * x0 + a12 * y0;
             double b2 = -mulFunc(func2, x0, y0) + a21 * x0 + a22 * y0;
 
-            if (a11 * a22 - a21 * a12 == 0) { results[i].criterium = false; break; }
+            if (a11 * a22 - a21 * a12 == 0) { break; }
 
             x1 = (b1 * a22 - b2 * a12) / (a11 * a22 - a21 * a12);
             y1 = (b2 * a11 - b1 * a21) / (a11 * a22 - a21 * a12);
@@ -164,7 +160,6 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
             y0 = y1;
             results[i].counter++;
         } while (diff > eps1);
-        cout << x0 << " " << y0 << endl;
         results[i].rootX = x0;
         results[i].rootY = y0;
     }
