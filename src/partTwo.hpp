@@ -4,9 +4,15 @@
 #include <functional>
 #include "someFunc.hpp"
 using namespace std;
-
+#define epsilont = 1e-6;
 mutex mtx;
-
+#define ACRED     "\x1b[31m"
+#define ACGREEN   "\x1b[32m"
+#define ACYELLOW  "\x1b[33m"
+#define ACBLUE    "\x1b[34m"
+#define ACMAGENTA "\x1b[35m"
+#define ACCYAN    "\x1b[36m"
+#define ACRESET   "\x1b[0m"
 struct mulRoots {
     double a = 0, b = 0;
     double rootX = 0, rootY = 0;
@@ -28,6 +34,7 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
         for (int j = 0; j < pole[0].size(); j++) {
             max_diff = (max_diff < pole[i][j].diff && !isnan(pole[i][j].diff)) ? pole[i][j].diff : max_diff;
             max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_var;
+
         }
     }
     for (int i = 0; i < pole.size(); i++) {
@@ -38,7 +45,8 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
     }
 
     for (int i = 1; i < pole.size() - 1; i++) {
-        for (int j = 1; j < pole[0].size() - 1; j++) {
+        for (int j = 1; j < pole.back().size() - 1; j++) {
+
             if (
                 (
                     pole[i][j].diff < pole[i - 1][j].diff &&
@@ -53,13 +61,13 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
                         )
                 ) {
                 mulRoots temp;
-                temp.a = i;
-                temp.b = i + eps;
+                temp.a = i + a;
+                temp.b = j + a;
                 roots.push_back(temp);
+                
             }
         }
     }
-    pole.clear();
     lock_guard<mutex> lock(mtx);
     results.insert(results.end(), roots.begin(), roots.end());
 }
@@ -80,10 +88,10 @@ void subMain2(){
     vector<vector<mulRoots>> results(numThreads);
     const double a = -100, b = 100;
     const double range = (b - a) / numThreads;
-    for (int i = -100,j = 0; i <= (100- range); i += range,j++) {
+    for (int i = 0,j = 0; i < numThreads; i ++) {
         double subA = a + i * range;
         double subB = subA + range;
-        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[j]), subA, subB, 1.0);
+        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1.0);
     }
 
     for (auto& tr : t) {
@@ -91,9 +99,11 @@ void subMain2(){
     }
     for (auto& result : results) {
         for (const auto& root : result) {
-            cout << root.rootX << ' ' << root.rootY << endl;
+            cout << root.a << ' ' << root.b << endl;
         }
     }
+     
+     
     //vector<vector<double>> solPole = findPole(func1, func2);
     /*for(int i = 0; i < 20; i++){
         for(int j = 0; j < 20; j++){
@@ -101,6 +111,14 @@ void subMain2(){
         }
         cout << endl;
     }*/
+    //cout << "-*-*-*-*-*-*\n";
+
+    vector<mulRoots> roots;
+    newtonsMethodDouble(func1, func2, std::ref(roots), -100, 100, 1.0);
+    for (const auto& root : roots) {
+        cout << root.a << ' ' << root.b << endl;
+    }
+
 }
 
 vector<vector<diff_var>> findPole(string func1, string func2, double a, double b, double eps) {
