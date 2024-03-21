@@ -17,12 +17,9 @@ struct mulRoots {
     double a = 0, b = 0;
     double rootX = 0, rootY = 0;
     int counter = 0;
+    bool isSet = false;
 };
-struct diff_var {
-    double diff = 0;
-    double var = 0;
-};
-vector<vector<diff_var>> findPole(string, string, double, double, double);
+vector<vector<double>> findPole(string, string, double, double, double);
 void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a = -100, double b = 100, double eps = 1);
 void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps);
 
@@ -57,14 +54,21 @@ void subMain2(){
     find2DimRootSpaces(func1, func2, std::ref(roots), a, b, primEps);
     newtonsMethodDouble(func1, func2, std::ref(roots), a, b, secEps);
     
-    cout << roots.size() << " root(s) was found:" << endl;
-    for (int i = 0; i < roots.size(); i++) {
-        if (roots[i].counter != 0) {
-            cout << i + 1 << " root on " << "X = [" << roots[i].a << ", " << roots[i].a + primEps << "], Y = [" << roots[i].b << ", " << roots[i].b + primEps <<
-                "] is x = " << roots[i].rootX << ", y = " << roots[i].rootY << ". It took " << roots[i].counter << " iterations." << endl;
+    vector<mulRoots> nRoots;
+    for (auto i : roots) {
+        if (i.isSet == 1) {
+            nRoots.push_back(i);
+        }
+    }
+
+    cout << nRoots.size() << " root(s) was found:" << endl;
+    for (int i = 0; i < nRoots.size(); i++) {
+        if (nRoots[i].counter != 0) {
+            cout << i + 1 << " root on " << "X = [" << nRoots[i].a << ", " << nRoots[i].a + primEps << "], Y = [" << nRoots[i].b << ", " << nRoots[i].b + primEps <<
+                "] is x = " << nRoots[i].rootX << ", y = " << nRoots[i].rootY << ". It took " << nRoots[i].counter << " iterations." << endl;
         }
         else {
-            cout << "For " << i + 1 << " root on " << "X = [" << roots[i].a << ", " << roots[i].a + primEps << "], Y = [" << roots[i].b << ", " << roots[i].b + primEps <<
+            cout << "For " << i + 1 << " root on " << "X = [" << nRoots[i].a << ", " << nRoots[i].a + primEps << "], Y = [" << nRoots[i].b << ", " << nRoots[i].b + primEps <<
                 "] Newton solution condition is not fulfilled." << endl;
         }
     }
@@ -72,22 +76,18 @@ void subMain2(){
 }
 
 void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps) {
-    vector<vector<diff_var>> pole = findPole(func1, func2, a, b, eps);
+    vector<vector<double>> pole = findPole(func1, func2, a, b, eps);
     vector<mulRoots> roots;
 
     double max_diff = 0;
-    double max_var = 0;
     for (int i = 0; i < pole.size(); i++) {
         for (int j = 0; j < pole[0].size(); j++) {
-            max_diff = (max_diff < pole[i][j].diff && !isnan(pole[i][j].diff)) ? pole[i][j].diff : max_diff;
-            max_var = (max_var < pole[i][j].var && !isnan(pole[i][j].var)) ? pole[i][j].var : max_var;
-
+            max_diff = (max_diff < pole[i][j] && !isnan(pole[i][j])) ? pole[i][j] : max_diff;
         }
     }
     for (int i = 0; i < pole.size(); i++) {
         for (int j = 0; j < pole[0].size(); j++) {
-            pole[i][j].diff = (isnan(pole[i][j].diff)) ? max_diff : pole[i][j].diff;
-            pole[i][j].var = (isnan(pole[i][j].var)) ? max_var : pole[i][j].var;
+            pole[i][j] = (isnan(pole[i][j])) ? max_diff : pole[i][j];
         }
     }
 
@@ -95,18 +95,11 @@ void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, d
         for (int j = 1; j < pole.back().size() - 1; j++) {
 
             if (
-                (
-                    pole[i][j].diff < pole[i - 1][j].diff &&
-                    pole[i][j].diff < pole[i + 1][j].diff &&
-                    pole[i][j].diff < pole[i][j - 1].diff &&
-                    pole[i][j].diff < pole[i][j + 1].diff
-                    ) && (
-                        pole[i][j].var < pole[i - 1][j].var &&
-                        pole[i][j].var < pole[i + 1][j].var &&
-                        pole[i][j].var < pole[i][j - 1].var &&
-                        pole[i][j].var < pole[i][j + 1].var
-                        )
-                ) {
+                pole[i][j] < pole[i - 1][j] &&
+                pole[i][j] < pole[i + 1][j] &&
+                pole[i][j] < pole[i][j - 1] &&
+                pole[i][j] < pole[i][j + 1]
+               ) {
                 mulRoots temp;
                 temp.a = i*eps + a;
                 temp.b = j*eps + a;
@@ -118,15 +111,13 @@ void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, d
     lock_guard<mutex> lock(mtx);
     results.insert(results.end(), roots.begin(), roots.end());
 }
-vector<vector<diff_var>> findPole(string func1, string func2, double a, double b, double eps) {
-    vector<vector<diff_var>> pole;
+vector<vector<double>> findPole(string func1, string func2, double a, double b, double eps) {
+    vector<vector<double>> pole;
     for (double i = a; i < b; i += eps) {
-        vector<diff_var> slice;
+        vector<double> slice;
         for (double j = a; j < b; j += eps) {
-            diff_var temp;
-            temp.diff = abs(mulFunc(func1, i, j) - mulFunc(func2, i, j));
-            temp.var = abs(mulFunc(func1, i, j));
-            slice.push_back(temp);
+            double diff = abs(mulFunc(func1, i, j) - mulFunc(func2, i, j));
+            slice.push_back(diff);
         }
         pole.push_back(slice);
         slice.clear();
@@ -135,6 +126,8 @@ vector<vector<diff_var>> findPole(string func1, string func2, double a, double b
 }
 
 void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps1) {
+    vector<double> alrX;
+    vector<double> alrY;
     for (int i = 0; i < results.size(); i++) {
         double diff;
         double x0 = results[i].a;
@@ -160,7 +153,20 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
             y0 = y1;
             results[i].counter++;
         } while (diff > eps1);
-        results[i].rootX = x0;
-        results[i].rootY = y0;
+        bool flag = false;
+        if (((mulFunc(func1, x0, y0) < 1e-2) && (mulFunc(func1, x0, y0) > -1e-2)) && !isnan(x0)) {
+            for (int j = 0; j < alrX.size(); j++) {
+                if (((alrX[j] < x0+eps1) && (alrX[j] > x0-eps1)) && ((alrY[j] < y0+eps1) && (alrY[j] > y0-eps1))) {
+                    flag += 1;
+                }
+            }
+            if (!flag) {
+                results[i].rootX = x0;
+                results[i].rootY = y0;
+                results[i].isSet = 1;
+                alrX.push_back(x0);
+                alrY.push_back(y0);
+            }
+        }
     }
 }

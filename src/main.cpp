@@ -2,6 +2,8 @@
 #include "partTwo.hpp"
 
 int main(){
-    subMain1();
+    //subMain1();
     subMain2();
+
+    system("pause");
 }
