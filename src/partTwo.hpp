@@ -91,7 +91,7 @@ void subMain2(){
     for (int i = 0,j = 0; i < numThreads; i ++) {
         double subA = a + i * range;
         double subB = subA + range;
-        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1.0);
+        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1);
     }
 
     for (auto& tr : t) {
