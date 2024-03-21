@@ -17,14 +17,15 @@ struct mulRoots {
     double a = 0, b = 0;
     double rootX = 0, rootY = 0;
     int counter = 0;
+    bool criterium = true;
 };
 struct diff_var {
     double diff = 0;
     double var = 0;
 };
 vector<vector<diff_var>> findPole(string, string, double, double, double);
-//void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a = -100, double b = 100, double eps = 1);
-void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps) {
+void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a = -100, double b = 100, double eps = 1);
+void find2DimRootSpaces(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps) {
     vector<vector<diff_var>> pole = findPole(func1, func2, a, b, eps);
     vector<mulRoots> roots;
 
@@ -71,7 +72,6 @@ void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, 
     lock_guard<mutex> lock(mtx);
     results.insert(results.end(), roots.begin(), roots.end());
 }
-//void NewtonMethod(string&, string&, rootRange&, double);
 
 void subMain2(){
     string func1;
@@ -91,7 +91,7 @@ void subMain2(){
     for (int i = 0,j = 0; i < numThreads; i ++) {
         double subA = a + i * range;
         double subB = subA + range;
-        t.emplace_back(newtonsMethodDouble, func1, func2, std::ref(results[i]), subA, subB, 1);
+        t.emplace_back(find2DimRootSpaces, func1, func2, std::ref(results[i]), subA, subB, 1);
     }
 
     for (auto& tr : t) {
@@ -114,6 +114,7 @@ void subMain2(){
     //cout << "-*-*-*-*-*-*\n";
 
     vector<mulRoots> roots;
+    find2DimRootSpaces(func1, func2, std::ref(roots), -10, 10, 1.0);
     newtonsMethodDouble(func1, func2, std::ref(roots), -100, 100, 1.0);
     for (const auto& root : roots) {
         cout << root.a << ' ' << root.b << endl;
@@ -137,3 +138,34 @@ vector<vector<diff_var>> findPole(string func1, string func2, double a, double b
     return pole;
 }
 
+void newtonsMethodDouble(string func1, string func2, vector<mulRoots>& results, double a, double b, double eps1) {
+    for (int i = 0; i < results.size(); i++) {
+        double diff;
+        double x0 = results[i].a;
+        double y0 = results[i].b;
+        do {
+            double x1;
+            double y1;
+
+            double a11 = findDerivativeByX(func1, x0, y0);
+            double a12 = findDerivativeByY(func1, x0, y0);
+            double a21 = findDerivativeByX(func2, x0, y0);
+            double a22 = findDerivativeByY(func2, x0, y0);
+
+            double b1 = -mulFunc(func1, x0, y0) + a11 * x0 + a12 * y0;
+            double b2 = -mulFunc(func2, x0, y0) + a21 * x0 + a22 * y0;
+
+            if (a11 * a22 - a21 * a12 == 0) { results[i].criterium = false; break; }
+
+            x1 = (b1 * a22 - b2 * a12) / (a11 * a22 - a21 * a12);
+            y1 = (b2 * a11 - b1 * a21) / (a11 * a22 - a21 * a12);
+            diff = sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+            x0 = x1;
+            y0 = y1;
+            results[i].counter++;
+        } while (diff > eps1);
+        cout << x0 << " " << y0 << endl;
+        results[i].rootX = x0;
+        results[i].rootY = y0;
+    }
+}

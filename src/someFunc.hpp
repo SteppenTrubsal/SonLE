@@ -29,8 +29,10 @@ double findDerivative(string& funcStr, double x, double eps = 1e-6){
     return ((func(funcStr, (x+eps)) - func(funcStr, (x-eps)))/(2*eps));
 }
 double findDerivativeByX(string& funcStr, double x, double y, double eps = 1e-6) {
-    return ((mulFunc(funcStr, (x + eps), y) - mulFunc(funcStr, (x - eps), y)) / (2 * eps));
+    if (isnan(mulFunc(funcStr, (x + eps), y))) { return mulFunc(funcStr, x, y); }
+    return ((mulFunc(funcStr, (x + eps), y) - mulFunc(funcStr, x, y)) / (eps));
 }
 double findDerivativeByY(string& funcStr, double x, double y, double eps = 1e-6) {
-    return ((mulFunc(funcStr, x , (y + eps)) - mulFunc(funcStr, x, (y - eps))) / (2 * eps));
+    if (isnan(mulFunc(funcStr, x, (y + eps)))) { return mulFunc(funcStr, x, y); }
+    return ((mulFunc(funcStr, x , (y + eps)) - mulFunc(funcStr, x, y )) / (eps));
 }
